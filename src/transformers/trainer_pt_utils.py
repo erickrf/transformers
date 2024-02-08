@@ -118,7 +118,12 @@ def nested_concat(tensors, new_tensors, padding_index=-100):
         new_tensors
     ), f"Expected `tensors` and `new_tensors` to have the same type but found {type(tensors)} and {type(new_tensors)}."
     if isinstance(tensors, (list, tuple)):
-        return type(tensors)(nested_concat(t, n, padding_index=padding_index) for t, n in zip(tensors, new_tensors))
+        if isinstance(tensors, list) and all(isinstance(t, Mapping) for t in tensors):
+            return tensors + new_tensors
+        else:
+            return type(tensors)(
+                nested_concat(t, n, padding_index=padding_index) for t, n in zip(tensors, new_tensors)
+            )
     elif isinstance(tensors, torch.Tensor):
         return torch_pad_and_concatenate(tensors, new_tensors, padding_index=padding_index)
     elif isinstance(tensors, Mapping):
